@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon16.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.geekzu.org/css?family=Noto+Serif+SC:300,300italic,400,400italic,700,700italic%7CLobster+Two:300,300italic,400,400italic,700,700italic%7CSource+Code+Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="非线性优化普遍的解决思路是使用非线性最小二乘，非线性最小二乘可参考前一篇文章“相机位姿估计”。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM 十四讲》中，其中的 BA 优化便利用李群李代数构造旋转矩阵的无约束优化问题，这在博客“相机位姿估计”中也比较详细介绍了。这里记录一下对流形优化新的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="非线性优化的流形和局部参数化">
+<meta property="og:url" content="http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/index.html">
+<meta property="og:site_name" content="Wei-Jun Lin&#39;s Blog">
+<meta property="og:description" content="非线性优化普遍的解决思路是使用非线性最小二乘，非线性最小二乘可参考前一篇文章“相机位姿估计”。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM 十四讲》中，其中的 BA 优化便利用李群李代数构造旋转矩阵的无约束优化问题，这在博客“相机位姿估计”中也比较详细介绍了。这里记录一下对流形优化新的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-01-29T07:09:16.359Z">
+<meta property="article:author" content="Wei-Jun Lin">
+<meta property="article:tag" content="manifold">
+<meta property="article:tag" content="非线性优化">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/","path":"2022/05/26/2022-05-26-optimization-in-manifold/","title":"非线性优化的流形和局部参数化"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>非线性优化的流形和局部参数化 | Wei-Jun Lin's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wei-Jun Lin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">学习 · 分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E5%BD%A2%E7%9A%84%E4%B8%8D%E4%B8%A5%E8%B0%A8%E4%BB%8B%E7%BB%8D"><span class="nav-text">流形的不严谨介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E5%BD%A2%E4%B8%8A%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-text">流形上的优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%90%91%E5%90%91%E9%87%8F%E6%B1%82%E5%AF%BC"><span class="nav-text">方向向量求导</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Wei-Jun Lin"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Wei-Jun Lin</p>
+  <div class="site-description" itemprop="description">君子可内敛不可懦弱<br>面不公可起而论之</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/weijun-lin" title="Github → https:&#x2F;&#x2F;github.com&#x2F;weijun-lin" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/joker-88-62-57/activities" title="ZHIHU → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;joker-88-62-57&#x2F;activities" rel="noopener me" target="_blank"><i class="fab fa-zhihu fa-fw"></i>ZHIHU</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weijun-lin@foxmail.com" title="E-Mail → mailto:weijun-lin@foxmail.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://lestertan.ink/" title="https:&#x2F;&#x2F;lestertan.ink" rel="noopener" target="_blank">Lester</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://hx-w.top/" title="http:&#x2F;&#x2F;hx-w.top&#x2F;" rel="noopener" target="_blank">Herixth</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://colin-jay.cn/" title="https:&#x2F;&#x2F;colin-jay.cn&#x2F;" rel="noopener" target="_blank">Colin Jay</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://yez-liu.github.io/" title="https:&#x2F;&#x2F;yez-liu.github.io&#x2F;" rel="noopener" target="_blank">yez-liu</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Wei-Jun Lin">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wei-Jun Lin's Blog">
+      <meta itemprop="description" content="君子可内敛不可懦弱<br>面不公可起而论之">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="非线性优化的流形和局部参数化 | Wei-Jun Lin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          非线性优化的流形和局部参数化
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-05-26 00:00:00" itemprop="dateCreated datePublished" datetime="2022-05-26T00:00:00+08:00">2022-05-26</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Math/" itemprop="url" rel="index"><span itemprop="name">Math</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>非线性优化普遍的解决思路是使用非线性最小二乘，非线性最小二乘可参考前一篇文章<a
+target="_blank" rel="noopener" href="https://weijun-lin.top/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98">“相机位姿估计”</a>。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM
+十四讲》中，其中的 BA
+优化便利用李群李代数构造旋转矩阵的无约束优化问题，这在博客<a
+target="_blank" rel="noopener" href="https://weijun-lin.top/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98">“相机位姿估计”</a>中也比较详细介绍了。这里记录一下对流形优化新的思考。</p>
+<span id="more"></span>
+<p>非线性最小二乘一般使用库 <a href="ceres-solver.org">Ceres Solver</a>
+构建，它提供了将变量转换到其流形上的方法，称之为局部参数化（<a
+href="%5BModeling%20Non-linear%20Least%20Squares%20—%20Ceres%20Solver%20(ceres-solver.org)%5D(http://ceres-solver.org/nnls_modeling.html#_CPPv4N5ceres21LocalParameterizationE)">Local
+Parameterization</a>），这个参数化过程便是其所在切空间到其流形的映射表示。</p>
+<h2 id="流形的不严谨介绍">流形的不严谨介绍</h2>
+<p>流形是一个空间，它表示了变量的本质，其所在的真实空间。比如三维空间的一条曲线，这条曲线所在的空间是三维的，即它嵌入在三维空间中，但实际上它是一条曲线，曲线只有一个自由度，即我们可以将曲线参数化表达为：</p>
+<p><span class="math display">\[
+l =
+\left\{
+\begin{align}
+x(t) \\
+y(t) \\
+z(t)
+\end{align}
+\right.
+\]</span></p>
+<p>很清楚的看到表达一条曲线其实只需要一个变量，即它本质上是一维的。这个一维空间便是它的流形空间，它流形是一维的。类似的，三维空间中的曲面，是一个二维流形。流形只能嵌入到比它维数更大的空间中。流形的维度和其变量所在的切空间有关，切空间是指变量某个取值处的切向量。拿曲线来说，三维空间曲线某点的切空间就是其切线，对于曲面则是其切平面。切空间满足欧式空间的性质，在切空间的改变量需要投影回流形，完成迭代更新。</p>
+<h2 id="流形上的优化">流形上的优化</h2>
+<p>之所以要将变量参数化到其流形上，是为了构建无约束的优化。在非线性优化中，比如经典的高斯牛顿法，本质上都是构建迭代：
+<span class="math display">\[
+x_{k+1} = x_k + \Delta x_k
+\]</span></p>
+<p>而这个迭代在变量自身有约束的情况下不一定成立，即更新后 <span
+class="math inline">\(x_{k+1}\)</span> 不满足约束条件，比如约束 x
+在某一条曲线上，当它执行简单的加法更新后它并不一定会在曲线上，但转移到流形上则不一样了。<strong>流形上的优化（局部参数化）可以理解为将
+<span class="math inline">\(\Delta x_k\)</span> 转变为 <span
+class="math inline">\(x_k\)</span>
+切空间上的改变量，更新变量后投影回原空间得到 <span
+class="math inline">\(x_{k+1}\)</span></strong>。Ceres
+中的局部参数化也就是这个过程，其本质是重载了优化迭代中的“加法”，可以表示为：
+<span class="math display">\[
+\boxplus (x,\Delta)
+\]</span> 在欧式空间中，<span class="math inline">\(\boxplus (x,\Delta)
+= x + \Delta\)</span>，在李代数中 <span class="math inline">\(\boxplus
+(x,\Delta) = \exp(\Delta)x\)</span>，<span
+class="math inline">\(\Delta\)</span> 是其切空间上的改变量，<span
+class="math inline">\(\exp(\Delta) x\)</span>
+将其，然后更投影回流形并更新 <span
+class="math inline">\(x\)</span>。这里李群通过矩阵乘法更新。</p>
+<p>通过与高斯牛顿法比较，改变量变成了切空间上的量，所以需要对这个改变量（扰动）求导，这也就李导数中的扰动求导，即对扰动求导。</p>
+<h2 id="方向向量求导">方向向量求导</h2>
+<p>这里给一个具体例子，方向向量的局部参数化和对扰动求导，方向向量指的是表示一个指向的向量，为单位向量。三维空间内的方向向量只有两个自由度，它构成的集合是球心在原点的单位球。方向向量
+<span class="math inline">\(n\)</span> 的扰动求导可以表示为： <span
+class="math display">\[
+n + \epsilon_{3\times 1} = \exp_{so3}(T_{3\times 2}\delta_{2\times 1})n
+\]</span> 扰动为 <span class="math inline">\(\delta\)</span>
+是一个二维向量，是在其切空间上的改变量，<span
+class="math inline">\(T_{3\times 2}\)</span> 为 <span
+class="math inline">\(n\)</span> 的切空间，即切平面，通过 <span
+class="math inline">\(T_{3\times 2}\delta_{2\times 1}\)</span>
+重新映射到三维欧式空间，为切平面上改变量在三维空间的表示，最后通过 <span
+class="math inline">\(\exp_{so3} \times n\)</span>
+投影到流形（单位球）上，这里将 <span
+class="math inline">\(T\delta\)</span> 理解为旋转向量。<span
+class="math inline">\(n\)</span> 的改变量对扰动的求导可以表示为： <span
+class="math display">\[
+\begin{align}
+\frac{\partial n}{\partial \delta}
+&amp;= \frac{\partial \epsilon}{\partial \delta} \\
+&amp;= \frac{ \exp_{so3}(T_{3\times 2}\delta)n - n}{\delta} \\
+&amp;= \frac{I + (T_{3\times 2}\delta)^{\wedge}n - n}{\delta} \\
+&amp;= \lim_{\delta\rightarrow 0}\frac{(T\delta)^{\wedge}n}{\delta} \\
+&amp;= \frac{\partial (T\delta)^{\wedge}n}{\partial(T\delta)}
+\frac{\partial T\delta}{\partial \delta} \\
+&amp; = -n^{\wedge}T
+\end{align}
+\]</span></p>
+<p>最后迭代更新为： <span class="math display">\[
+n&#39; = \exp_{so3}(T_{3\times 2}\delta_{2\times 1})n
+\]</span></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/manifold/" rel="tag"># manifold</a>
+              <a href="/tags/%E9%9D%9E%E7%BA%BF%E6%80%A7%E4%BC%98%E5%8C%96/" rel="tag"># 非线性优化</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/01/29/2023-01-29-SFMLearner/" rel="prev" title="SFM Learner 2017">
+                  <i class="fa fa-chevron-left"></i> SFM Learner 2017
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/" rel="next" title="【报告】相机位姿估计与点云优化">
+                  【报告】相机位姿估计与点云优化 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2018 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Wei-Jun Lin</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">135k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">8:09</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weijun-lin" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+
+</body>
+</html>

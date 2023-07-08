@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon16.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.geekzu.org/css?family=Noto+Serif+SC:300,300italic,400,400italic,700,700italic%7CLobster+Two:300,300italic,400,400italic,700,700italic%7CSource+Code+Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="计算机视觉与图形图像处理等方面傅里叶变换都是一个十分重要的工具，与傅里叶变换紧密结合起来的便是卷积和相关，尤其是卷积（Convolution）在《数字图像处理-冈萨雷斯》中对卷积的的介绍比较笼统。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="卷积的简单概况">
+<meta property="og:url" content="http://example.com/2020/11/01/2020-11-01-ConvolutionAndCorrelation/index.html">
+<meta property="og:site_name" content="Wei-Jun Lin&#39;s Blog">
+<meta property="og:description" content="计算机视觉与图形图像处理等方面傅里叶变换都是一个十分重要的工具，与傅里叶变换紧密结合起来的便是卷积和相关，尤其是卷积（Convolution）在《数字图像处理-冈萨雷斯》中对卷积的的介绍比较笼统。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-10-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-09-01T08:36:14.684Z">
+<meta property="article:author" content="Wei-Jun Lin">
+<meta property="article:tag" content="傅里叶变换">
+<meta property="article:tag" content="信号处理">
+<meta property="article:tag" content="卷积">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2020/11/01/2020-11-01-ConvolutionAndCorrelation/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2020/11/01/2020-11-01-ConvolutionAndCorrelation/","path":"2020/11/01/2020-11-01-ConvolutionAndCorrelation/","title":"卷积的简单概况"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>卷积的简单概况 | Wei-Jun Lin's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wei-Jun Lin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">学习 · 分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%B2%E6%BF%80%E4%BF%A1%E5%8F%B7"><span class="nav-text">冲激信号</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9E%E7%BB%AD%E6%97%B6%E9%97%B4%E7%9A%84%E5%86%B2%E6%BF%80%E4%BF%A1%E5%8F%B7"><span class="nav-text">连续时间的冲激信号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A6%BB%E6%95%A3%E6%97%B6%E9%97%B4%E7%9A%84%E5%86%B2%E6%BF%80%E4%BF%A1%E5%8F%B7"><span class="nav-text">离散时间的冲激信号</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9E%E7%BB%AD%E6%97%B6%E9%97%B4%E4%BF%A1%E5%8F%B7%E7%9A%84%E5%8D%B7%E7%A7%AF"><span class="nav-text">连续时间信号的卷积</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%8D%B7%E7%A7%AF"><span class="nav-text">线性卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%A8%E6%9C%9F%E5%8D%B7%E7%A7%AF"><span class="nav-text">周期卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%8D%B7%E7%A7%AF"><span class="nav-text">循环卷积</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A6%BB%E6%95%A3%E6%97%B6%E9%97%B4%E4%BF%A1%E5%8F%B7%E7%9A%84%E5%8D%B7%E7%A7%AF"><span class="nav-text">离散时间信号的卷积</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E5%8D%B7%E7%A7%AF-1"><span class="nav-text">线性卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%A8%E6%9C%9F%E5%8D%B7%E7%A7%AF-1"><span class="nav-text">周期卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%8D%B7%E7%A7%AF-1"><span class="nav-text">循环卷积</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E8%A1%A5%E5%85%85"><span class="nav-text">简单补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%93%E5%85%85%E5%8F%82%E8%80%83"><span class="nav-text">拓充参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Wei-Jun Lin"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Wei-Jun Lin</p>
+  <div class="site-description" itemprop="description">君子可内敛不可懦弱<br>面不公可起而论之</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/weijun-lin" title="Github → https:&#x2F;&#x2F;github.com&#x2F;weijun-lin" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/joker-88-62-57/activities" title="ZHIHU → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;joker-88-62-57&#x2F;activities" rel="noopener me" target="_blank"><i class="fab fa-zhihu fa-fw"></i>ZHIHU</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weijun-lin@foxmail.com" title="E-Mail → mailto:weijun-lin@foxmail.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://lestertan.ink/" title="https:&#x2F;&#x2F;lestertan.ink" rel="noopener" target="_blank">Lester</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://hx-w.top/" title="http:&#x2F;&#x2F;hx-w.top&#x2F;" rel="noopener" target="_blank">Herixth</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://colin-jay.cn/" title="https:&#x2F;&#x2F;colin-jay.cn&#x2F;" rel="noopener" target="_blank">Colin Jay</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://yez-liu.github.io/" title="https:&#x2F;&#x2F;yez-liu.github.io&#x2F;" rel="noopener" target="_blank">yez-liu</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/11/01/2020-11-01-ConvolutionAndCorrelation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Wei-Jun Lin">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wei-Jun Lin's Blog">
+      <meta itemprop="description" content="君子可内敛不可懦弱<br>面不公可起而论之">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="卷积的简单概况 | Wei-Jun Lin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          卷积的简单概况
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-11-01 00:00:00" itemprop="dateCreated datePublished" datetime="2020-11-01T00:00:00+08:00">2020-11-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/" itemprop="url" rel="index"><span itemprop="name">Computer Science</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/CV-CG-DIP/" itemprop="url" rel="index"><span itemprop="name">CV&CG&DIP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/CV-CG-DIP/CV/" itemprop="url" rel="index"><span itemprop="name">CV</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>计算机视觉与图形图像处理等方面傅里叶变换都是一个十分重要的工具，与傅里叶变换紧密结合起来的便是<strong>卷积和相关</strong>，尤其是卷积（Convolution）在《数字图像处理-冈萨雷斯》中对卷积的的介绍比较笼统。</p>
+<span id="more"></span>
+<p>以下内容参考自《傅里叶变换-冷建华》以及《DIP》</p>
+<p>卷积和相关有连续时间和离散时间两种形式，称之为时间是因为傅里叶是和信号紧密相关的，信号简单来说就是有意义的改变量，一般是随时间改变。</p>
+<h2 id="冲激信号">冲激信号</h2>
+<p>类似的冲激信号也有连续和离散两种形式，冲激信号是十分重要的基本信号，在傅里叶变换和取样有重要作用。</p>
+<h3 id="连续时间的冲激信号">连续时间的冲激信号</h3>
+<p>基本形式如下： <span class="math display">\[
+\delta_a(t) =
+\left\{
+\begin{aligned}
++\infty&amp;, &amp;t = 0 \\
+0&amp;, &amp;t\neq 0
+\end{aligned}
+\right.
+\]</span> 且满足： <span class="math display">\[
+\int_{-\infty}^{+\infty} \delta_a(t) dt = 1
+\]</span> 下标 a
+表示模拟信号（analog），有以下的积分形式的取样特性（sift）： <span
+class="math display">\[
+\int_{-\infty}^{+\infty} f(t) \delta_a(t) dt = f(0) \\
+\int_{-\infty}^{+\infty} f(t) \delta_a(t-t_0) dt = f(t_0)
+\]</span></p>
+<h3 id="离散时间的冲激信号">离散时间的冲激信号</h3>
+<p>和连续形式的冲激类似，其形式如下： <span class="math display">\[
+\delta(n) =
+\left\{
+\begin{aligned}
+1&amp;, &amp;n = 0 \\
+0&amp;, &amp;n\neq 0
+\end{aligned}
+\right.
+\]</span> 其中 n 为整数，满足： <span class="math display">\[
+\sum_{n = -\infty}^{+\infty}\delta(n) = 1
+\]</span> 类似的取样特性如下： <span class="math display">\[
+\sum_{n = -\infty}^{+\infty} f(n)\delta(n) = f(0) \\
+\sum_{n = -\infty}^{+\infty} f(n)\delta(n - x_0) = f(x_0)
+\]</span></p>
+<h2 id="连续时间信号的卷积">连续时间信号的卷积</h2>
+<h3 id="线性卷积">线性卷积</h3>
+<p>定义如下： <span class="math display">\[
+x_a(t) * y_a(t) = \int_{-\infty}^{+\infty} x_a(\tau) y_a(t-\tau) d\tau
+\]</span> 也就是将 <span class="math inline">\(y_a\)</span>
+翻转（卷）之后对应相乘（积）然后平移计算出所有的值。</p>
+<p>具有<strong>冲激不变性</strong>： <span class="math display">\[
+x_a(t) * \delta_a(t) = \int_{-\infty}^{+\infty} x_a(\tau)
+\delta_a(t-\tau) d\tau = x_a(t)
+\]</span> 线性卷积一般针对一般信号，需要在整个定义域内进行计算</p>
+<h3 id="周期卷积">周期卷积</h3>
+<p>周期卷积也就是针对的是周期信号的卷积，因为是周期信号所以只需要关注一个周期就可以了</p>
+<p>定义如下： <span class="math display">\[
+x_a(t) * y_a(t) = \int_{0}^{T} x_a(\tau) y_a(t-\tau) d\tau
+\]</span> 其中 <span class="math inline">\(x_a\)</span> 和 <span
+class="math inline">\(y_a\)</span> 都是周期为 T
+的信号，和线性卷积唯一不同的就是积分区域，这里采用的是 <span
+class="math inline">\([0 \sim
+T]\)</span>，其实只要满足一个周期就可以了</p>
+<h3 id="循环卷积">循环卷积</h3>
+<p>循环卷积是针对有限信号，即在某一段区域内有定义的信号（定义域外为
+0）假设信号 <span class="math inline">\(x_a,y_a\)</span> 定义在 <span
+class="math inline">\([0 \sim T]\)</span> 上，循环卷积定义如下： <span
+class="math display">\[
+x_a(t) * y_a(t) = \int_{0}^{T} x_a(\tau) y_a(&lt;t-\tau&gt;_T) d\tau
+\]</span> 其中 <span class="math inline">\(&lt;t-\tau&gt;_T\)</span>
+表示对 <span class="math inline">\(t-\tau\)</span> 取模 T
+运算，即余数。</p>
+<p>卷积后的信号仅在 <span class="math inline">\([0\sim T]\)</span>
+有定义，其它均为 0。</p>
+<p><strong>周期卷积和循环卷积同样满足冲击不变性</strong>。</p>
+<h2 id="离散时间信号的卷积">离散时间信号的卷积</h2>
+<p>类似于连续信号，离散信号（序列）仅仅是将积分改为求和，离散卷积同样具有冲击不变性</p>
+<h3 id="线性卷积-1">线性卷积</h3>
+<p>定义如下： <span class="math display">\[
+x(n) * y(n) = \sum_{i=-\infty}^{+\infty} x(i) y(n-i)
+\]</span> n 为整数，代表离散</p>
+<h3 id="周期卷积-1">周期卷积</h3>
+<p>周期卷积对应的就是周期序列，两个周期为 N 的信号的卷积如下： <span
+class="math display">\[
+x(n) * y(n) = \sum_{i=0}^{N-1} x(i) y(n-i)
+\]</span></p>
+<h3 id="循环卷积-1">循环卷积</h3>
+<p>循环卷积定义的是一般有限序列，定义如下： <span
+class="math display">\[
+x(n) * y(n) = \sum_{i=0}^{N-1} x(i) y(&lt;n-i&gt;_N)
+\]</span></p>
+<h2 id="简单补充">简单补充</h2>
+<p>循环卷积和周期卷积本质上并无区别，循环卷积就是对有限序列直接进行<strong>周期拓展</strong>后的周期卷积</p>
+<p>循环卷积也叫做圆周卷积</p>
+<p>对于长度不同的序列做循环卷积一般会进行拓展，即在末尾补0，假设两个信号长度分别为
+M，N，则补充 0 后的长度应该至少为
+M+N，这样的循环卷积才会和直接线性卷积相同。即两个信号的高低频不会混淆。</p>
+<h2 id="拓充参考">拓充参考</h2>
+<p><a
+target="_blank" rel="noopener" href="https://www.cnblogs.com/kensporger/p/12903152.html">序列卷积：线性、周期和圆周</a></p>
+<p><a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/100289337">别怕，"卷积"其实很简单</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%82%85%E9%87%8C%E5%8F%B6%E5%8F%98%E6%8D%A2/" rel="tag"># 傅里叶变换</a>
+              <a href="/tags/%E4%BF%A1%E5%8F%B7%E5%A4%84%E7%90%86/" rel="tag"># 信号处理</a>
+              <a href="/tags/%E5%8D%B7%E7%A7%AF/" rel="tag"># 卷积</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/12/03/2020-12-03-Image%20Features%20Detection%20Description%20and%20Matching/" rel="prev" title="【译】图像特征检测，描述和匹配">
+                  <i class="fa fa-chevron-left"></i> 【译】图像特征检测，描述和匹配
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/09/24/2020-09-24-next-permutation/" rel="next" title="【STL】next_permutation 算法原理">
+                  【STL】next_permutation 算法原理 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2018 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Wei-Jun Lin</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">135k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">8:09</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weijun-lin" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon32.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon16.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.geekzu.org/css?family=Noto+Serif+SC:300,300italic,400,400italic,700,700italic%7CLobster+Two:300,300italic,400,400italic,700,700italic%7CSource+Code+Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="一、 研究问题 在基于视觉的三维重建算法（如 Structure From Motion, SFM1）以及同时定位与地图构建（Simultaneous localization and mapping, SLAM23）等涉及立体视觉的理论研究中，需要通过相机成像模型及特征点匹配等理论恢复相机位姿以重构三维场景，即目标点云的生成。 相机的位姿估计指从若干给定的图像中恢复相机的运动（位姿），进而">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【报告】相机位姿估计与点云优化">
+<meta property="og:url" content="http://example.com/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="Wei-Jun Lin&#39;s Blog">
+<meta property="og:description" content="一、 研究问题 在基于视觉的三维重建算法（如 Structure From Motion, SFM1）以及同时定位与地图构建（Simultaneous localization and mapping, SLAM23）等涉及立体视觉的理论研究中，需要通过相机成像模型及特征点匹配等理论恢复相机位姿以重构三维场景，即目标点云的生成。 相机的位姿估计指从若干给定的图像中恢复相机的运动（位姿），进而">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/ArticleImg/2022/BA-report.assets/src.png">
+<meta property="og:image" content="http://example.com/assets/ArticleImg/2022/BA-report.assets/res.png">
+<meta property="og:image" content="http://example.com/assets/ArticleImg/2022/BA-report.assets/final.png">
+<meta property="article:published_time" content="2022-03-12T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-09-14T08:54:47.482Z">
+<meta property="article:author" content="Wei-Jun Lin">
+<meta property="article:tag" content="SFM">
+<meta property="article:tag" content="BA">
+<meta property="article:tag" content="李群李代数">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/ArticleImg/2022/BA-report.assets/src.png">
+
+
+<link rel="canonical" href="http://example.com/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/","path":"2022/03/13/2022-03-13- 相机位姿估计与点云优化/","title":"【报告】相机位姿估计与点云优化"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【报告】相机位姿估计与点云优化 | Wei-Jun Lin's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Wei-Jun Lin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">学习 · 分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-sitemap"><a href="/sitemap.xml" rel="section"><i class="fa fa-sitemap fa-fw"></i>站点地图</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E7%A0%94%E7%A9%B6%E9%97%AE%E9%A2%98"><span class="nav-text">一、 研究问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E7%A0%94%E7%A9%B6%E7%8E%B0%E7%8A%B6"><span class="nav-text">二、 研究现状</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-text">三、解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98"><span class="nav-text">3.1 非线性最小二乘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%8E%E7%BE%A4%E6%9D%8E%E4%BB%A3%E6%95%B0"><span class="nav-text">3.2 李群李代数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%89%E6%9D%9F%E6%B3%95%E5%B9%B3%E5%B7%AE"><span class="nav-text">3.3 光束法平差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%80%BC%E6%9E%84%E5%BB%BA"><span class="nav-text">3.4 初值构建</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-text">四、实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E9%AA%8C%E8%AF%81"><span class="nav-text">4.1 理论验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bal-%E6%95%B0%E6%8D%AE%E9%9B%86%E6%B5%8B%E8%AF%95"><span class="nav-text">4.2 BAL 数据集测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E7%BB%93%E8%AE%BA"><span class="nav-text">五、结论</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Wei-Jun Lin"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Wei-Jun Lin</p>
+  <div class="site-description" itemprop="description">君子可内敛不可懦弱<br>面不公可起而论之</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/weijun-lin" title="Github → https:&#x2F;&#x2F;github.com&#x2F;weijun-lin" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>Github</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/joker-88-62-57/activities" title="ZHIHU → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;joker-88-62-57&#x2F;activities" rel="noopener me" target="_blank"><i class="fab fa-zhihu fa-fw"></i>ZHIHU</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:weijun-lin@foxmail.com" title="E-Mail → mailto:weijun-lin@foxmail.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="sidebar-inner sidebar-blogroll">
+      <div class="links-of-blogroll animated">
+        <div class="links-of-blogroll-title"><i class="fa fa-globe fa-fw"></i>
+          链接
+        </div>
+        <ul class="links-of-blogroll-list">
+            <li class="links-of-blogroll-item">
+              <a href="https://lestertan.ink/" title="https:&#x2F;&#x2F;lestertan.ink" rel="noopener" target="_blank">Lester</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="http://hx-w.top/" title="http:&#x2F;&#x2F;hx-w.top&#x2F;" rel="noopener" target="_blank">Herixth</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://colin-jay.cn/" title="https:&#x2F;&#x2F;colin-jay.cn&#x2F;" rel="noopener" target="_blank">Colin Jay</a>
+            </li>
+            <li class="links-of-blogroll-item">
+              <a href="https://yez-liu.github.io/" title="https:&#x2F;&#x2F;yez-liu.github.io&#x2F;" rel="noopener" target="_blank">yez-liu</a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Wei-Jun Lin">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Wei-Jun Lin's Blog">
+      <meta itemprop="description" content="君子可内敛不可懦弱<br>面不公可起而论之">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【报告】相机位姿估计与点云优化 | Wei-Jun Lin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【报告】相机位姿估计与点云优化
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-03-13 00:00:00" itemprop="dateCreated datePublished" datetime="2022-03-13T00:00:00+08:00">2022-03-13</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/" itemprop="url" rel="index"><span itemprop="name">Computer Science</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/CV-CG-DIP/" itemprop="url" rel="index"><span itemprop="name">CV&CG&DIP</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/CV-CG-DIP/CV/" itemprop="url" rel="index"><span itemprop="name">CV</span></a>
+        </span>
+          ，
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Computer-Science/CV-CG-DIP/CV/%E4%B8%89%E7%BB%B4%E8%A7%86%E8%A7%89%E4%B8%8ESLAM/" itemprop="url" rel="index"><span itemprop="name">三维视觉与SLAM</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>17 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="一-研究问题">一、 研究问题</h2>
+<p>在基于视觉的三维重建算法（如 Structure From Motion, SFM<a href="#fn1"
+class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>）以及同时定位与地图构建（Simultaneous
+localization and mapping, SLAM<a href="#fn2" class="footnote-ref"
+id="fnref2" role="doc-noteref"><sup>2</sup></a><a href="#fn3"
+class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a>）等涉及立体视觉的理论研究中，需要通过相机成像模型及特征点匹配等理论恢复相机位姿以重构三维场景，即目标点云的生成。</p>
+<p>相机的位姿估计指从若干给定的图像中恢复相机的运动（位姿），进而恢复目标的三维结构（点云）。相机运动（位姿）即相机的外部参数，是世界坐标系到相机坐标系的变换，包含旋转和平移，即欧式变换。相机成像模型如下：
+<span class="math display">\[
+ZP_{uv} = Z
+\left[
+\begin{matrix}
+u \\
+v \\
+1
+\end{matrix}
+\right] =
+K(RP_w+t) = KTP_w \tag{1.1}
+\]</span></p>
+<p>其中 <span class="math inline">\(Z\)</span> 为世界坐标系下目标点
+<span class="math inline">\(P_w\)</span> 的 z 轴坐标，<span
+class="math inline">\(K\)</span> 为相机内参，可通过张正友标定法<a
+href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a>确定，<span
+class="math inline">\(R,t\)</span>
+为世界坐标系到相机坐标系的变换，可以使用矩阵 <span
+class="math inline">\(T\)</span> 表示，<span
+class="math inline">\(P_{uv}\)</span> 代表像素坐标系，<span
+class="math inline">\(u,v\)</span>
+为像素坐标。这里目标为通过一些约束估计相机外参 <span
+class="math inline">\(R,t\)</span>
+。获取相机位姿后便可以进一步得到目标的三维点云。</p>
+<span id="more"></span>
+<h2 id="二-研究现状">二、 研究现状</h2>
+<p>三维重建相关的算法中，许多通过图像信息恢复三维结构。图像信息主要由特征点表示，通过特征点可以构建图像间的联系，进一步可以得到目标的三维信息。特征点指的是图像中具有代表性的点，反映图像的局部特征。代表性的图像特征提取算法有：SIFT<a
+href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a>、SURF<a href="#fn6"
+class="footnote-ref" id="fnref6"
+role="doc-noteref"><sup>6</sup></a>、ORB<a href="#fn7"
+class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>
+等。这一类算法提取的特征点具有很强的不变性，如尺度不变性、光照不变性、旋转不变性等，并高效地表达图像的局部特征。特征点包含关键点及对应的描述符，关键点指特征点在图像的具体坐标，描述符则体现关键点的局部特征，为不同图像中特征的匹配提供支持。特征匹配是确定图像间关联关系的重要步骤，但由于特征点一般数量众多，特征匹配带来的资源消耗也十分大，快速最邻近算法（FLANN）<a
+href="#fn8" class="footnote-ref" id="fnref8"
+role="doc-noteref"><sup>8</sup></a>为大规模匹配作了优化。</p>
+<p>在单目视觉中通过图像间的像素坐标匹配建立运动关系，可将问题转换为利用两组
+2D
+匹配对估计相机位姿，这类问题可通过对极几何解决。对极几何本质上是三维空间目标点和两相机中心共面的约束，由本质矩阵和基础矩阵表达，这两个矩阵蕴含了相机的运动，可以使用八点法<a
+href="#fn9" class="footnote-ref" id="fnref9"
+role="doc-noteref"><sup>9</sup></a>或者五点法<a href="#fn10"
+class="footnote-ref" id="fnref10"
+role="doc-noteref"><sup>10</sup></a>求解 <span
+class="math inline">\(R,t\)</span>。但本质矩阵（或基础矩阵）具有尺度等价性，从而它得到的
+<span class="math inline">\(R,t\)</span>
+也具有尺度等价性。旋转矩阵本身具有单位正交的约束，但分离得到的 <span
+class="math inline">\(t\)</span>
+具有尺度等价性，这是单目视觉的尺度不确定性的主要原因。得到两幅图像之间的运动之后可通过三角测量获得特征点的空间位置，估计目标点云，但仍然是尺度不确定的。</p>
+<p>深度相机（RGB-D）通过红外结构光或“Time Of
+Flight”原理获得目标深度信息，从而直接得到目标的 3D
+信息，是尺度确定的。从而相机的运动可以从两组 3D
+匹配点中恢复，可以使用迭代最近点（Iterative Closest Point，ICP）求解。但
+RGB-D
+相机存在测量范围窄，噪声大，易受日光干扰等问题，一般适用于室内。</p>
+<p>双目相机也可得到深度信息。它由两个单目相机组成，这两个相机的距离称为基线，通过基线以及视差图计算每一个像素的空间位置。双目相机比
+RGB-D
+相机具有更好的适用性，但视差图的计算量是巨大的，所以双目相机的主要问题在于如何加速计算以节约资源。</p>
+<p>当知道空间点的三维坐标以及它们在图片上的投影位置时估计相机位姿，这类问题称为
+PnP（Perspective-n-Point）问题。其中空间点的三维坐标可以通过三角测量或者
+RGB-D 相机得到。PnP
+克服了对极约束中尺度的不确定，是一种主要的姿态估计方法。PnP
+问题求解有许多方法，如利用三对点对求解的 P3P<a href="#fn11"
+class="footnote-ref" id="fnref11"
+role="doc-noteref"><sup>11</sup></a>，当目标为平面时还可以使用直接线性变换（DLT），还有
+EPnP （Efficient PnP）<a href="#fn12" class="footnote-ref" id="fnref12"
+role="doc-noteref"><sup>12</sup></a>等。这些方法对匹配点的精度要求十分高，但在实际情况中虽然可获得很大数量的匹配点对，但每个点对都存在一定误差，即存在噪声，而光束法平差（Bundle
+Adjustment，BA）通过构建非线性最小二乘问题对位姿和点云优化，具有很好的鲁棒性，在匹配点数量众多的情况下效果很好，所以这里讨论
+BA 的求解方法。</p>
+<h2 id="三解决方案">三、解决方案</h2>
+<p>光束法平差<a href="#fn13" class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a>，Bundle Adjustment
+是使用非线性优化求估计位姿，以及优化空间点位置的方法。这一章节先介绍非线性优化的相关理论，然后通过相机成像模型构建重投影误差，从而建立优化函数。并使用李代数将问题转换为无约束优化问题。</p>
+<h3 id="非线性最小二乘">3.1 非线性最小二乘</h3>
+<p>经典的非线性最小二乘问题可以表达为： <span class="math display">\[
+\min_{\pmb x} F(\pmb x) = \frac{1}{2} \vert\vert f(\pmb x)
+\vert\vert_2^2 \tag{3.1.1}
+\]</span> <span class="math inline">\(f(\pmb x)\)</span>
+可以是向量函数，非线性最小二乘目标是找到 <span
+class="math inline">\(\pmb x\)</span> 使得目标函数 <span
+class="math inline">\(F(\pmb x)\)</span> 到达最小值。函数极值问题即求解
+<span
+class="math inline">\(\frac{dF(x)}{dx}=0\)</span>，满足这个条件的解可能是极大值、极小值或者是鞍点，这个方程的难解程度依赖于
+<span class="math inline">\(f(\pmb x)\)</span>
+本身的特点。此外，还可利用迭代求解：</p>
+<ol type="1">
+<li>确定初值 <span class="math inline">\(x_0\)</span></li>
+<li>对于第 k 次迭代，搜寻一个增量 <span class="math inline">\(\Delta
+x_k\)</span>，满足 <span class="math inline">\(\vert \vert f(x_k+\Delta
+x_k) \vert \vert_2^2\)</span> 达到最小</li>
+<li>迭代停机条件：当 <span class="math inline">\(\Delta x_k\)</span>
+足够小时，停止</li>
+<li>否则进行更新：<span class="math inline">\(x_{k+1} = x_k + \Delta
+x_k\)</span>，并返回步骤 2</li>
+</ol>
+<p>在迭代过程中，不断更新 <span class="math inline">\(x\)</span>
+使得函数值越来越小，即将求导问题转换为 <span
+class="math inline">\(\Delta x_k\)</span>
+的确定问题。但这里停机时候的解并不一定是全局最优的，这依赖于初值的确定，不好的初值可能使得迭代陷入局部最小值，所以对于此类非线性优化问题初值的选择十分重要。</p>
+<p><span class="math inline">\(\Delta x_k\)</span>
+的选择可以使用高斯牛顿法确定。将 <span class="math inline">\(f(\pmb
+x)\)</span> 进行一阶泰勒展开，可得： <span class="math display">\[
+f(x+\Delta x) \approx f(x) + J(x)\Delta x \tag{3.1.2}
+\]</span> 其中 <span class="math inline">\(J(x)\)</span> 为 <span
+class="math inline">\(f(x)\)</span> 关于 <span
+class="math inline">\(x\)</span>
+的雅可比矩阵，根据前面确定的迭代流程，给定 <span
+class="math inline">\(x\)</span> 需要要找到 $x $ 使得 <span
+class="math inline">\(\vert \vert f(x+\Delta x) \vert \vert_2^2\)</span>
+达到最小，将式 3.1.2 带入 式 3.1.1 可得： <span class="math display">\[
+\Delta \hat x = \arg \min_{\Delta x} \frac{1}{2} \vert \vert
+f(x)+J(x)\Delta x \vert\vert_2^2 \tag{3.1.3}
+\]</span> 这里 <span class="math inline">\(x\)</span> 是已知项，即 <span
+class="math inline">\(x_k\)</span>
+。所以这是一个线性最小二乘问题，易知该函数是一个凸函数，只需要对 <span
+class="math inline">\(\Delta x\)</span> 求导，并令其等于 0 即可。可得：
+<span class="math display">\[
+J(x)^Tf(x) + J(x)^TJ(x) \Delta x = 0 \tag{3.1.4}
+\]</span> 进一步可得： <span class="math display">\[
+\begin{align}
+H(x)\Delta x &amp;= g(x) \tag{3.1.5}\\
+H(x) &amp;= J(x)^TJ(x) \\
+g(x) &amp;= - J(x)^Tf(x)
+\end{align}
+\]</span> 高斯牛顿法的核心为求解式
+3.1.5，线性方程组可以使用很多方式求解，对于不同的 <span
+class="math inline">\(H(x)\)</span>
+可以采取不同的求解方式，以提高求解速度。高斯牛顿法总结如下：</p>
+<ol type="1">
+<li>确定初值 <span class="math inline">\(x_0\)</span></li>
+<li>对于第 k 次迭代，求解当前的雅可比矩阵 <span
+class="math inline">\(J(x_k)\)</span> 并构建方程 <span
+class="math inline">\(H(x_k)\Delta x_k = g(x_k)\)</span></li>
+<li>迭代停机条件：当 <span class="math inline">\(\Delta x_k\)</span>
+足够小时，停止</li>
+<li>否则进行更新：<span class="math inline">\(x_{k+1} = x_k + \Delta
+x_k\)</span>，并返回步骤 2</li>
+</ol>
+<p>高斯牛顿法存在步长可能过大的问题。一种改进为列文伯格-马夸尔特（Levenberg-Marquardt）<a
+href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a>方法，它采用了动态步长，很大程度上改良了高斯牛顿法。</p>
+<h3 id="李群李代数">3.2 李群李代数</h3>
+<p>在 3.1
+节介绍的为无约束非线性最小二乘算法，但在光束法平差中需要对旋转矩阵求导并更新，旋转矩阵具有内在的约束，需要保证其为单位正交阵。旋转矩阵没有加法定义，即两个旋转矩阵相加并不是旋转矩阵，定义在旋转矩阵上有意义的运算为乘法运算。</p>
+<p>三维旋转矩阵构成特殊正交群 SO(3)，三维旋转加平移则构成特殊欧式群
+SE(3)，定义如下： <span class="math display">\[
+\begin{align}
+\text{SO}(3) &amp;= \{R\in \mathbb R^{3\times 3}|RR^T=\pmb I,\det(R)=1
+\} \tag{3.2.1}\\
+\text{SE}(3) &amp;= \Big\{T=
+\left[
+\begin{matrix}
+R &amp; t \\
+\pmb 0^T &amp; 1
+\end{matrix}
+\right]
+\in
+\mathbb R^{4\times 4}|
+R\in \text{SO(3)},
+t\in \mathbb R^3
+\Big\}
+\tag{3.2.2}
+\end{align}
+\]</span> SO(3)、SE(3)
+都属于李群，每一个李群都有对应的李代数，李代数描述了李群的局部性质，是其正切空间的表示。SO(3)、SE(3)
+对应的李代数表示为 <span
+class="math inline">\({\frak{so}}(3)\)</span>、<span
+class="math inline">\({\frak{se}}(3)\)</span>，李群与李代数之间可以通过指数映射和对数映射相互转换。将旋转角度约束在
+<span class="math inline">\(\pm \pi\)</span> 之内，此映射便为一个双射。
+<span class="math display">\[
+\begin{align}
+R = {\rm exp}(\phi^{\wedge})&amp;,\phi^{\wedge} = \log(R) \tag{3.2.3}\\
+T = \exp (\xi^{\wedge})&amp;,\xi^{\wedge} = \log (T) \tag{3.2.4}\\
+\end{align}
+\]</span> 其中： <span class="math display">\[
+\begin{align}
+\phi &amp;= [\phi_1 \quad \phi_2 \quad \phi_3]\in {\frak so}(3) \\
+\phi^{\wedge} &amp;=
+\left[
+\begin{matrix}
+0 &amp; -\phi _3 &amp; \phi_2 \\
+\phi_3 &amp; 0 &amp; -\phi_1 \\
+-\phi_2 &amp; \phi_1 &amp; 0
+\end{matrix}
+\right] \tag{3.2.5}\\
+\xi &amp;= [\rho^T\quad \phi^T] \in {\frak se}(3) \tag{3.2.6}\\
+\xi^{\wedge} &amp;=
+\left[
+\begin{matrix}
+\phi^{\wedge} &amp; \rho \\
+\pmb 0^T&amp; 0
+\end{matrix}
+\right] \tag{3.2.7}\\
+\rho &amp;\in \mathbb R^3
+\end{align}
+\]</span> <span class="math inline">\({\frak so}(3)\)</span>
+本质上是旋转向量组成的空间，旋转向量是无约束的。<span
+class="math inline">\({\frak se}(3)\)</span> 则可以理解为平移向量和
+<span class="math inline">\({\frak so}(3)\)</span>
+的结合。将李群转换到李代数就可以构建无约束优化问题。在优化问题求导是重要的步骤，这里讨论对空间施加一个变换，考虑对变换的导数。李群没有加法定义，所以不能使用导数定义求导，李群的求导需要使用扰动模型，对李群左乘或者右乘一个微小扰动
+<span
+class="math inline">\(\exp(\delta^{\wedge})\)</span>，然后计算变化量
+<span class="math inline">\(\epsilon\)</span> 对扰动 <span
+class="math inline">\(\delta\)</span> 的导数，如下： <span
+class="math display">\[
+\begin{align}
+TP + \epsilon &amp;= \exp (\delta^{\wedge})TP \tag{3.2.8} \\
+\delta &amp;\in {\frak se}(3)
+\end{align}
+\]</span></p>
+<p>由式 3.2.8、3.2.7 ，并根据左扰动模型可以得到 <span
+class="math inline">\(TP\)</span> 对微小变换的导数为： <span
+class="math display">\[
+\begin{align}
+\frac{\partial TP}{\partial \delta} &amp;= \frac{\partial
+\epsilon}{\partial \delta} \\
+&amp;= \frac{\partial (\exp (\delta^{\wedge})TP - TP)}{\partial \delta}
+\\
+&amp;= \frac{\partial ((\pmb I + \delta^{\wedge})TP - TP)}{\partial
+\delta}\\
+&amp;= \frac{\partial (\delta^{\wedge}TP)}{\partial \delta} \\
+&amp;= \frac{\partial
+\left[
+\begin{matrix}
+\phi^{\wedge} &amp; \rho \\
+\pmb 0^T&amp; 0
+\end{matrix}
+\right]
+\left[
+\begin{matrix}
+Rp+t \\
+1
+\end{matrix}
+\right]
+}{\partial \delta} \\
+&amp;= \frac{\partial
+\left[
+\begin{matrix}
+\phi^{\wedge}(Rp+t)+\rho \\
+\pmb 0^T
+\end{matrix}
+\right]
+}{\partial [\rho \quad \phi^{\wedge}]}\\
+&amp;=
+\left[
+\begin{matrix}
+\pmb I &amp; -(TP)^{\wedge} \\
+\pmb 0^T&amp; 0
+\end{matrix}
+\right]
+\tag{3.2.9}
+\end{align}
+\]</span> 3.1
+节非线性优化模型中，对变量求导之后的更新步骤使用的是加法更新。在扰动模型中，由式
+3.2.8 可知应该使用 <span
+class="math inline">\(\exp(\delta^{\wedge})T\)</span> 更新矩阵 <span
+class="math inline">\(T\)</span>，即： <span class="math display">\[
+T_{k+1} = \exp(\delta^{\wedge})T_k \tag{3.2.10}
+\]</span></p>
+<h3 id="光束法平差">3.3 光束法平差</h3>
+<p>根据相机成像模型有： <span class="math display">\[
+\begin{align}
+s_i
+\pmb u_i &amp;=
+KTP_i
+\tag{3.3.1}\\
+\pmb u_i &amp;= \left[
+\begin{matrix}
+u_i &amp; v_i &amp; 1
+\end{matrix}
+\right]^T \\
+P_i &amp;=
+\left[
+\begin{matrix}
+X_i &amp; Y_i &amp; Z_i &amp; 1
+\end{matrix}
+\right]^T
+\end{align}
+\]</span> 式 3.3.1 中 <span class="math inline">\(\pmb u_i\)</span> 第 i
+个匹配的像素坐标，<span class="math inline">\(P_i\)</span>
+为对应的空间点。由于相机位姿 <span class="math inline">\(T\)</span>
+未知，且空间点 <span class="math inline">\(P_i\)</span>
+存在一定的噪声，所以对所有的匹配点，式 3.3.1
+不一定恒等，即始终存在一个误差，这个误差称为重投影误差，光束法平差目标为最小化所有匹配的重投影误差和，从而获得位姿和估计点最优估计。光束法平差的非线性最小二乘表达如下：
+<span class="math display">\[
+\hat T,\hat P_i = \arg \min_{T,P_i} \frac{1}{2}\sum_{i=1}^n \vert\vert
+\pmb u_i - \frac{1}{s_i} KTP_i \vert \vert_2^2 \tag{3.3.2}
+\]</span></p>
+<p>定义单个点误差为： <span class="math display">\[
+e = \pmb u - \frac{1}{s}KTP \tag{3.3.3}
+\]</span> 根据 3.1
+节的非线性优化模型，需要得到我们需要得到误差对优化变量 K、P
+的雅可比矩阵，以更新迭代待优化变量。</p>
+<p>定义变量 <span class="math inline">\(P&#39;\)</span> 满足： <span
+class="math display">\[
+\begin{align}
+P&#39; = (TP)_{1:3} &amp;=
+\left[
+\begin{matrix}
+X&#39; &amp; Y&#39; &amp; Z&#39;
+\end{matrix}\
+\right]^T \tag{3.3.4}\\
+e &amp;= \pmb u - \pmb u&#39; \tag{3.3.5} \\
+\pmb u&#39; &amp;= \frac{1}{Z&#39;}KP&#39; \tag{3.3.6}
+\end{align}
+\]</span> 根据链式求导法则，可得 <span class="math inline">\(e\)</span>
+关于 <span class="math inline">\(P\)</span> 的雅可比矩阵为： <span
+class="math display">\[
+\begin{align}
+J_P(P) = \frac{\partial e}{\partial P&#39;} \frac{\partial
+P&#39;}{\partial P} \tag{3.3.7}
+\end{align}
+\]</span> 相机内参矩阵定义为： <span class="math display">\[
+K =
+\left[
+\begin{matrix}
+f_x &amp; 0 &amp; c_x \\
+0 &amp; f_y &amp; c_y \\
+0 &amp; 0 &amp; 1
+\end{matrix}
+\right]
+\tag{3.3.8}
+\]</span> 式 3.3.8 带入式 3.3.6 可得： <span class="math display">\[
+\begin{align}
+\pmb u&#39; &amp;= [u&#39;\quad v&#39;]^T\\
+u&#39; = f_x \frac{X&#39;}{Z&#39;} + c_x &amp;,\quad v&#39; =
+f_y\frac{Y&#39;}{Z&#39;} + c_y
+\tag{3.3.9}\\
+\end{align}
+\]</span> 由式 3.3.7、3.3.8、3.3.9 可得： <span class="math display">\[
+\frac{\partial e}{\partial P&#39;} = -
+\left[
+\begin{matrix}
+\frac{\partial u&#39;}{\partial X&#39;} &amp;
+\frac{\partial u&#39;}{\partial Y&#39;} &amp;
+\frac{\partial u&#39;}{\partial Z&#39;} \\
+\frac{\partial v&#39;}{\partial X&#39;} &amp;
+\frac{\partial v&#39;}{\partial Y&#39;} &amp;
+\frac{\partial v&#39;}{\partial Z&#39;} \\
+\end{matrix}
+\right]
+=
+-
+\left[
+\begin{matrix}
+\frac{f_x}{Z&#39;} &amp; 0 &amp; -\frac{f_xX&#39;}{Z&#39;^2} \\
+0 &amp; \frac{f_y}{Z&#39;} &amp; \frac{f_yY&#39;}{Z&#39;^2}
+\end{matrix}
+\right]
+\tag{3.3.10}
+\]</span> 由式 3.3.4 可得 <span class="math inline">\(P&#39;\)</span>
+对于 <span class="math inline">\(P\)</span> 的导数为： <span
+class="math display">\[
+\begin{align}
+P&#39; &amp;= RP + t \\
+\frac{\partial P&#39;}{\partial P} &amp;= R \tag{3.3.11}
+\end{align}
+\]</span> 式 3.3.10、3.3.11 带入式 3.3.7
+可得误差关于空间点的雅可比矩阵为： <span class="math display">\[
+J_P(P) = -
+\left[
+\begin{matrix}
+\frac{f_x}{Z&#39;} &amp; 0 &amp; -\frac{f_xX&#39;}{Z&#39;^2} \\
+0 &amp; \frac{f_y}{Z&#39;} &amp; \frac{f_yY&#39;}{Z&#39;^2}
+\end{matrix}
+\right] R
+\tag{3.3.12}
+\]</span> 由 3.2 节可以得到误差对位姿变化的导数，这里相机位姿使用李代数
+<span class="math inline">\(\xi\)</span> 表示，位姿上的扰动为 <span
+class="math inline">\(\delta \xi\)</span>。从式 3.2.9、3.3.4、3.3.10
+可得： <span class="math display">\[
+\begin{align}
+J_T(\delta\xi) &amp;= \frac{\partial e}{\partial P&#39;}\frac{\partial
+P&#39;}{\partial \delta\xi}\\
+&amp;=
+-
+\left[
+\begin{matrix}
+\frac{f_x}{Z&#39;} &amp; 0 &amp; -\frac{f_xX&#39;}{Z&#39;^2} \\
+0 &amp; \frac{f_y}{Z&#39;} &amp; \frac{f_yY&#39;}{Z&#39;^2}
+\end{matrix}
+\right]
+\left[
+\begin{matrix}
+\pmb I &amp; -P&#39;^{\wedge}
+\end{matrix}
+\right] \tag{3.3.13}
+\end{align}
+\]</span> 由式 3.3.12，3.3.13
+可以得到误差对位姿以及空间点的导数，便可以使用高斯牛顿法或者 LM
+法迭代更新，位姿更新采用式 3.2.10。</p>
+<h3 id="初值构建">3.4 初值构建</h3>
+<p>如 3.1
+节所述，非线性最小二乘优化的结果不一定是全局最优，所以需要构建良好的初值。对于光束法平差，可以使用
+EPNP
+等算法快速构建相机位姿的初值，然后使用迭代优化。目标三维点云可由三角测量得到，并作为点云初始值。</p>
+<h2 id="四实验结果">四、实验结果</h2>
+<h3 id="理论验证">4.1 理论验证</h3>
+<p>此部分代码以提交至本人
+Github：https://github.com/Weijun-Lin/SLAM-Try/tree/master/BA-ceres</p>
+<p>利用生成的数据进行理论验证，使用一个相机的 3D-2D
+匹配优化位姿以及点云。步骤如下：</p>
+<ol type="1">
+<li>构建实验数据，确定相机内参矩阵以及相机真实位姿，并生成点云，根据相机成像模型建立
+3D-2D 匹配，相机位姿使用李代数 <span class="math inline">\({\frak
+se}(3)\)</span> 表示，前三维为平移，后三维为旋转即 <span
+class="math inline">\({\frak so}(3)\)</span></li>
+<li>对真实位姿以及 3D 点云添加噪声干扰，得到待优化数据</li>
+<li>使用光束法平差（BA）优化</li>
+<li>利用均方误差（MSE）作为评价标准</li>
+</ol>
+<p>原始位姿如下：</p>
+<ul>
+<li>相机内参：<span class="math inline">\(3\times 3\)</span>
+的单位阵</li>
+<li>相机真实位姿：<span class="math inline">\([0 \quad 0 \quad -20 \quad
+0\quad 0 \quad 0]\)</span></li>
+<li>添加噪声后位姿：<span class="math inline">\([3.6e^{-2} \quad
+-8.4e^{-2} \quad -19.99 \quad 2.8e^{-3}\quad -1.89e^{-3} \quad
+-8.87e^{-4}]\)</span></li>
+</ul>
+<p>原始点云图：</p>
+<figure>
+<img src="/assets/ArticleImg/2022/BA-report.assets/src.png"
+alt="真实点云图" />
+<figcaption aria-hidden="true">真实点云图</figcaption>
+</figure>
+<p>光束法平差优化后位姿为： <span class="math display">\[
+[3.55e^{-2} \quad -7.31e^{-2} \quad -20.036 \quad 1.92e^{-3} \quad
+-1.56e^{-3} \quad 1.3e^{-4}]
+\]</span> 噪声干扰后点云以及光束法平差优化后点云如下图：</p>
+<figure>
+<img src="/assets/ArticleImg/2022/BA-report.assets/res.png"
+alt="结果图" />
+<figcaption aria-hidden="true">结果图</figcaption>
+</figure>
+<p>均方误差统计如下表：</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>位姿误差</th>
+<th>点云误差</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>优化前</td>
+<td>0.091614</td>
+<td>0.78033</td>
+</tr>
+<tr class="even">
+<td>优化后</td>
+<td>0.088821</td>
+<td>0.59205</td>
+</tr>
+</tbody>
+</table>
+<p>可以看出，位姿以及点云在光束法平差后得到了优化。</p>
+<h3 id="bal-数据集测试">4.2 BAL 数据集测试</h3>
+<p>BAL 数据集地址：https://grail.cs.washington.edu/projects/bal/，BAL
+数据集包含了多幅图像，包含了 3D
+空间点云，以及在每一副图像上的匹配点。这里使用的是
+problem-16-22106-pre.txt.bz2 数据。此部分代码参考自 Github<a
+href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a>，地址为：https://github.com/gaoxiang12/slambook2/tree/master/ch9。</p>
+<p>优化之前点云图为：</p>
+<p><img
+src="/assets/ArticleImg/2022/BA-report.assets/initial.png" /></p>
+<p>优化之后点云为：</p>
+<p><img src="/assets/ArticleImg/2022/BA-report.assets/final.png" /></p>
+<p>可以看出优化之后点云将原常见轮廓更好的体现了出来</p>
+<h2 id="五结论">五、结论</h2>
+<p>综上，光束法平差对大规模点云优化以及相机位姿估计有很大的作用，但由于优化参数过于庞大，带来的空间以及时间开销都是巨大的。所以需要对问题规模做合理的约束。</p>
+<p>光束法平差本质是一个非线性优化，它需要构建良好的初值，初值的确定对其优化效果特别重要。在
+4.1
+节，优化效果不是特别好，原因在于相机位姿只有一个，当存在多个相机位姿提供多个匹配关系时，优化效果会更加，如
+4.2 节所示。</p>
+<aside id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>chonberger J L, Frahm J M. Structure-from-motion
+revisited[C]//Proceedings of the IEEE conference on computer vision and
+pattern recognition. 2016: 4104-4113.<a href="#fnref1"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Thrun S. Simultaneous localization and
+mapping[M]//Robotics and cognitive approaches to spatial mapping.
+Springer, Berlin, Heidelberg, 2007: 13-41.<a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>高翔
+张涛等.视觉SLAM十四讲：从理论到实践（第二版）[M].北京:电子工业出版社,2017<a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Zhang Z. Flexible camera calibration by viewing a plane
+from unknown orientations[C]//Proceedings of the seventh ieee
+international conference on computer vision. Ieee, 1999, 1: 666-673.<a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Lowe D G. Distinctive image features from
+scale-invariant keypoints[J]. International journal of computer vision,
+2004, 60(2): 91-110.<a href="#fnref5" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Bay H, Tuytelaars T, Van Gool L. Surf: Speeded up robust
+features[C]//European conference on computer vision. Springer, Berlin,
+Heidelberg, 2006: 404-417.<a href="#fnref6" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Rublee E, Rabaud V, Konolige K, et al. ORB: An efficient
+alternative to SIFT or SURF[C]//2011 International conference on
+computer vision. Ieee, 2011: 2564-2571.<a href="#fnref7"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Muja M, Lowe D G. Fast approximate nearest neighbors
+with automatic algorithm configuration[J]. VISAPP (1), 2009, 2(331-340):
+2.<a href="#fnref8" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Hartley R I. In defense of the eight-point algorithm[J].
+IEEE Transactions on pattern analysis and machine intelligence, 1997,
+19(6): 580-593.<a href="#fnref9" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>Li H, Hartley R. Five-point motion estimation made
+easy[C]//18th International Conference on Pattern Recognition (ICPR'06).
+IEEE, 2006, 1: 630-633.<a href="#fnref10" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>Gao X S, Hou X R, Tang J, et al. Complete solution
+classification for the perspective-three-point problem[J]. IEEE
+transactions on pattern analysis and machine intelligence, 2003, 25(8):
+930-943.<a href="#fnref11" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>Lepetit V, Moreno-Noguer F, Fua P. Epnp: An accurate o
+(n) solution to the pnp problem[J]. International journal of computer
+vision, 2009, 81(2): 155.<a href="#fnref12" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>高翔
+张涛等.视觉SLAM十四讲：从理论到实践（第二版）[M].北京:电子工业出版社,2017<a
+href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>Moré J J. The Levenberg-Marquardt algorithm:
+implementation and theory[M]//Numerical analysis. Springer, Berlin,
+Heidelberg, 1978: 105-116.<a href="#fnref14" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>高翔
+张涛等.视觉SLAM十四讲：从理论到实践（第二版）[M].北京:电子工业出版社,2017<a
+href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</aside>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SFM/" rel="tag"># SFM</a>
+              <a href="/tags/BA/" rel="tag"># BA</a>
+              <a href="/tags/%E6%9D%8E%E7%BE%A4%E6%9D%8E%E4%BB%A3%E6%95%B0/" rel="tag"># 李群李代数</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/05/26/2022-05-26-optimization-in-manifold/" rel="prev" title="非线性优化的流形和局部参数化">
+                  <i class="fa fa-chevron-left"></i> 非线性优化的流形和局部参数化
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/03/06/2022-03-06-%E5%BD%93%E4%BB%A3%E4%B8%AD%E5%9B%BD%E7%A4%BE%E4%BC%9A%E5%90%84%E9%98%B6%E7%BA%A7%E5%88%86%E6%9E%90/" rel="next" title="当代中国社会各阶级（阶层）分析【转】">
+                  当代中国社会各阶级（阶层）分析【转】 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2018 – 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Wei-Jun Lin</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">135k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">8:09</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/weijun-lin" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+
+</body>
+</html>
