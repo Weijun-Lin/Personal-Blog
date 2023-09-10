@@ -17,12 +17,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weijun-lin.top","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="非线性优化普遍的解决思路是使用非线性最小二乘，非线性最小二乘可参考前一篇文章“相机位姿估计”。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM 十四讲》中，其中的 BA 优化便利用李群李代数构造旋转矩阵的无约束优化问题，这在博客“相机位姿估计”中也比较详细介绍了。这里记录一下对流形优化新的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="非线性优化的流形和局部参数化">
-<meta property="og:url" content="http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/index.html">
+<meta property="og:url" content="https://weijun-lin.top/2022/05/26/2022-05-26-optimization-in-manifold/index.html">
 <meta property="og:site_name" content="Wei-Jun Lin&#39;s Blog">
 <meta property="og:description" content="非线性优化普遍的解决思路是使用非线性最小二乘，非线性最小二乘可参考前一篇文章“相机位姿估计”。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM 十四讲》中，其中的 BA 优化便利用李群李代数构造旋转矩阵的无约束优化问题，这在博客“相机位姿估计”中也比较详细介绍了。这里记录一下对流形优化新的">
 <meta property="og:locale" content="zh_CN">
@@ -34,11 +34,11 @@
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/">
+<link rel="canonical" href="https://weijun-lin.top/2022/05/26/2022-05-26-optimization-in-manifold/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/","path":"2022/05/26/2022-05-26-optimization-in-manifold/","title":"非线性优化的流形和局部参数化"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weijun-lin.top/2022/05/26/2022-05-26-optimization-in-manifold/","path":"2022/05/26/2022-05-26-optimization-in-manifold/","title":"非线性优化的流形和局部参数化"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>非线性优化的流形和局部参数化 | Wei-Jun Lin's Blog</title>
@@ -199,7 +199,7 @@
               <a href="https://lestertan.ink/" title="https:&#x2F;&#x2F;lestertan.ink" rel="noopener" target="_blank">Lester</a>
             </li>
             <li class="links-of-blogroll-item">
-              <a href="http://hx-w.top/" title="http:&#x2F;&#x2F;hx-w.top&#x2F;" rel="noopener" target="_blank">Herixth</a>
+              <a href="https://blog.scubot.com/" title="https:&#x2F;&#x2F;blog.scubot.com&#x2F;" rel="noopener" target="_blank">CarOL</a>
             </li>
             <li class="links-of-blogroll-item">
               <a href="https://colin-jay.cn/" title="https:&#x2F;&#x2F;colin-jay.cn&#x2F;" rel="noopener" target="_blank">Colin Jay</a>
@@ -226,7 +226,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/26/2022-05-26-optimization-in-manifold/">
+    <link itemprop="mainEntityOfPage" href="https://weijun-lin.top/2022/05/26/2022-05-26-optimization-in-manifold/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -299,10 +299,10 @@
     
     
     <div class="post-body" itemprop="articleBody"><p>非线性优化普遍的解决思路是使用非线性最小二乘，非线性最小二乘可参考前一篇文章<a
-target="_blank" rel="noopener" href="https://weijun-lin.top/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98">“相机位姿估计”</a>。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM
+href="https://weijun-lin.top/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98">“相机位姿估计”</a>。在很多优化过程中，如果优化变量本身具有一定的约束，这样的优化将变得十分复杂，所以如果能将约束问题转换为无约束的这可以带来极大的便利。在高翔博士的《SLAM
 十四讲》中，其中的 BA
 优化便利用李群李代数构造旋转矩阵的无约束优化问题，这在博客<a
-target="_blank" rel="noopener" href="https://weijun-lin.top/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98">“相机位姿估计”</a>中也比较详细介绍了。这里记录一下对流形优化新的思考。</p>
+href="https://weijun-lin.top/2022/03/13/2022-03-13-%20%E7%9B%B8%E6%9C%BA%E4%BD%8D%E5%A7%BF%E4%BC%B0%E8%AE%A1%E4%B8%8E%E7%82%B9%E4%BA%91%E4%BC%98%E5%8C%96/#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E5%B0%8F%E4%BA%8C%E4%B9%98">“相机位姿估计”</a>中也比较详细介绍了。这里记录一下对流形优化新的思考。</p>
 <span id="more"></span>
 <p>非线性最小二乘一般使用库 <a href="ceres-solver.org">Ceres Solver</a>
 构建，它提供了将变量转换到其流形上的方法，称之为局部参数化（<a

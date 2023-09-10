@@ -17,30 +17,30 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha256-HtsXJanqjKTc8vVQjO4YMhiqFoXkfBsjBWcX91T1jr8=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"weijun-lin.top","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.17.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":{"enable":true,"style":null},"bookmark":{"enable":true,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
 
     <meta name="description" content="matlab 自带了 ransac 函数，这里总结一下用法。matlab 自带的这个函数其实是 MSAC（M-estimator sample consensus）算法，但其实差不多，它对给定数据集，以及自定的模型计算函数和误差计算函数返回具有最大内点的模型。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Matlab ransac 库函数介绍">
-<meta property="og:url" content="http://example.com/2021/01/25/2021-01-25-RANSAC-MATLAB/index.html">
+<meta property="og:url" content="https://weijun-lin.top/2021/01/25/2021-01-25-RANSAC-MATLAB/index.html">
 <meta property="og:site_name" content="Wei-Jun Lin&#39;s Blog">
 <meta property="og:description" content="matlab 自带了 ransac 函数，这里总结一下用法。matlab 自带的这个函数其实是 MSAC（M-estimator sample consensus）算法，但其实差不多，它对给定数据集，以及自定的模型计算函数和误差计算函数返回具有最大内点的模型。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/assets/ArticleImg/2021/ransac-matlab.png">
+<meta property="og:image" content="https://weijun-lin.top/assets/ArticleImg/2021/ransac-matlab.png">
 <meta property="article:published_time" content="2021-01-24T16:00:00.000Z">
 <meta property="article:modified_time" content="2021-01-25T14:18:10.227Z">
 <meta property="article:author" content="Wei-Jun Lin">
 <meta property="article:tag" content="matlab">
 <meta property="article:tag" content="RANSAC">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/assets/ArticleImg/2021/ransac-matlab.png">
+<meta name="twitter:image" content="https://weijun-lin.top/assets/ArticleImg/2021/ransac-matlab.png">
 
 
-<link rel="canonical" href="http://example.com/2021/01/25/2021-01-25-RANSAC-MATLAB/">
+<link rel="canonical" href="https://weijun-lin.top/2021/01/25/2021-01-25-RANSAC-MATLAB/">
 
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2021/01/25/2021-01-25-RANSAC-MATLAB/","path":"2021/01/25/2021-01-25-RANSAC-MATLAB/","title":"Matlab ransac 库函数介绍"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://weijun-lin.top/2021/01/25/2021-01-25-RANSAC-MATLAB/","path":"2021/01/25/2021-01-25-RANSAC-MATLAB/","title":"Matlab ransac 库函数介绍"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
 <title>Matlab ransac 库函数介绍 | Wei-Jun Lin's Blog</title>
@@ -201,7 +201,7 @@
               <a href="https://lestertan.ink/" title="https:&#x2F;&#x2F;lestertan.ink" rel="noopener" target="_blank">Lester</a>
             </li>
             <li class="links-of-blogroll-item">
-              <a href="http://hx-w.top/" title="http:&#x2F;&#x2F;hx-w.top&#x2F;" rel="noopener" target="_blank">Herixth</a>
+              <a href="https://blog.scubot.com/" title="https:&#x2F;&#x2F;blog.scubot.com&#x2F;" rel="noopener" target="_blank">CarOL</a>
             </li>
             <li class="links-of-blogroll-item">
               <a href="https://colin-jay.cn/" title="https:&#x2F;&#x2F;colin-jay.cn&#x2F;" rel="noopener" target="_blank">Colin Jay</a>
@@ -228,7 +228,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/25/2021-01-25-RANSAC-MATLAB/">
+    <link itemprop="mainEntityOfPage" href="https://weijun-lin.top/2021/01/25/2021-01-25-RANSAC-MATLAB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
