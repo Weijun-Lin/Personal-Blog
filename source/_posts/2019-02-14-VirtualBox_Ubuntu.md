@@ -5,7 +5,7 @@ categories:
 - Computer Science
 - Tool
 tags:
-- linux
+- Linux
 ---
 
 ## 虚拟机的简单概念
