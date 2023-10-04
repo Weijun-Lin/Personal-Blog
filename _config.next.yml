@@ -101,6 +101,7 @@ menu:
   tags: /tags/ || fa fa-tags
   categories: /categories/ || fa fa-th
   archives: /archives/ || fa fa-archive
+  读书小记: /reading/ || fa fa-book-open
   #schedule: /schedule/ || calendar
   sitemap: /sitemap.xml || fa fa-sitemap
   #commonweal: /404/ || heartbeat
@@ -182,7 +183,7 @@ links_settings:
 links:
   #Title: https://example.com
   Lester: https://lestertan.ink
-  Herixth: http://hx-w.top/
+  CarOL: https://blog.scubot.com/
   Colin Jay: https://colin-jay.cn/
   yez-liu: https://yez-liu.github.io/
 
@@ -380,6 +381,10 @@ codeblock:
     enable: true
     # Available values: default | flat | mac
     style:
+  # Fold code block
+  fold:
+    enable: false
+    height: 500
 
 back2top:
   enable: true
