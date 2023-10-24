@@ -9616,7 +9616,7 @@ Kerrisk 著。</p>
 <p>篇幅较多，单独收录到：<a
 href="https://linuxprogramming.weijun-lin.top/">Readme - Linux/Unix
 入门编程 (weijun-lin.top)</a></p>
-<p>上次更新: 2023-07-18</p>
+<p>上次更新: 2023-10-01</p>
 <p>不断补充中……</p>
 ]]></content>
       <categories>
@@ -9625,6 +9625,73 @@ href="https://linuxprogramming.weijun-lin.top/">Readme - Linux/Unix
       </categories>
       <tags>
         <tag>操作系统</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>英语技术论文写作注意事项</title>
+    <url>/2023/10/24/2023-10-24-%E8%8B%B1%E8%AF%AD%E6%8A%80%E6%9C%AF%E8%AE%BA%E6%96%87%E5%86%99%E4%BD%9C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/</url>
+    <content><![CDATA[<p>一些我们在英语论文写作过程中容易犯的错误以及注意点。</p>
+<p>以下内容摘自：<em>The Most Common Habits from more than 200 English
+Papers written by Graduate Chinese Engineering Students</em></p>
+<span id="more"></span>
+<h2 id="section-1">Section 1</h2>
+<ol type="1">
+<li><p>注意使用 "a, an, the"</p></li>
+<li><p>避免超长句子</p></li>
+<li><p>先阐述句子的主要观点，然后再描述目的、位置、原因等其它成分</p></li>
+<li><p>不要以表示时间作为句子开头，如 "When ..., ..."</p></li>
+<li><p>避免把句子最终要的部分直接放在开头来强调</p></li>
+<li><p>注意使用 "which/that"</p></li>
+<li><p>注意使用 "Respectively" 和
+"respective"，当描述两个以上事物且当描述顺序很重要时使用，并注意</p>
+<ol type="1">
+<li>不要放在句子中间，respectively 一般放在句子末尾并用逗号隔开</li>
+<li>当这个顺序用其它形式表达出来了就不要用这个词</li>
+<li>避免不必要的使用，比如多个物体但没有明确指出时</li>
+</ol></li>
+<li><p>避免多次使用 "In this paper" 或者 "In this study"
+，这两个一般在开头、结尾或者文章中描述了他人工作后强调自己工作部分时使用，另外
+"in this paper" 强调论文表达形式，"in this study"
+表示论文所做的工作</p></li>
+<li><p>不要在句子开头使用阿拉伯数字</p></li>
+<li><p>注意格式，论文分段及其格式</p></li>
+<li><p>注意使用 "such as" 和 "etc"，这两个不能同时使用，冗余了，不要用
+such as 表示列举完的举例</p></li>
+<li><p>"such as"：列举未完成的例子（没有列完）</p></li>
+<li><p>"etc"：表示列举没有结束 ## Section 2</p></li>
+<li><p>注意单词复数形式，有些不需要加 s，如</p>
+<ol type="1">
+<li>literature (when referring to research)</li>
+<li>equipment,</li>
+<li>staff (referring to a group of people)</li>
+<li>faculty</li>
+</ol></li>
+<li><p>避免出现冗余词组表达</p></li>
+</ol>
+<p><img
+src="/assets/ArticleImg/2023/英语技术论文写作注意事项.assets/image.png" /></p>
+<ol start="3" type="1">
+<li>注意在某些形容词后使用复数形式，如 different, various, two,
+etc.</li>
+<li>不要用数字或缩写作为句子开头</li>
+<li>不要使用 "by this way"，用 "by doing this" 或 "using this method"
+替代</li>
+<li>不要用 "how to" 作为句子开头</li>
+<li>不要用 "the results are showed in Fig. 2"，使用 "are shown in"</li>
+<li>变量用斜体表示，或期刊要求的格式</li>
+<li>不要在技术论文中使用 "Obviously"</li>
+<li>不要在国际论文中加 "at home" 等词</li>
+<li>尽量避免使用 "that is to say" 或者 "namely"
+短语，尽可能用句子重新表达</li>
+<li>不要使用 "too" 作为句子结尾，尤其在技术论文中</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Tool</category>
+      </categories>
+      <tags>
+        <tag>论文研读</tag>
+        <tag>文章分享</tag>
       </tags>
   </entry>
 </search>
