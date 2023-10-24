@@ -16,6 +16,6 @@ Linux/Unix 入门编程手册，参考自 《Linux/Unix 系统编程手册》Mic
 
 篇幅较多，单独收录到：[Readme - Linux/Unix 入门编程 (weijun-lin.top)](https://linuxprogramming.weijun-lin.top/)
 
-上次更新: 2023-07-18
+上次更新: 2023-10-01
 
 不断补充中……

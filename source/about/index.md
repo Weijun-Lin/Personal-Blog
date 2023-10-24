@@ -1,6 +1,6 @@
 ---
 title: 关于我
-date: 2023-07-25
+date: 2023-10-05
 type: "about"
 ---
 ## 简介
@@ -12,6 +12,8 @@ type: "about"
 ## 兴趣爱好
 
 摄影、羽毛球，最近还在练字，但全部都只有刚入门水平。
+
+500px 主页：[https://500px.com.cn/WeijunLin](https://500px.com.cn/WeijunLin)
 
 ## 人生目标
 
